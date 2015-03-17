@@ -12,10 +12,12 @@ list.files('../temp_data/fy14')
 
 enroll_file <- ('../temp_data/fy14/raw_enrollment_report.txt')
 pos_file <- ('../temp_data/fy14/raw_pos_report.txt')
-tp_file <- ('../temp_data/fy14/raw_touchpoint_report.txt')
+tp_file <- ('../temp_data/fy14/raw_touchpoint_report_detailed.txt')
 asmt_file <- ('../temp_data/fy14/raw_assessment_report.txt')
 ref_file <- ('../temp_data/fy14/raw_referrals_report.txt')
 ptype_file <- ('../temp_data/fy14/program_type.txt')
+
+# Deal with pos data ------------------------------------------------------
 
 # Load data
 # enroll <- load_txt(enroll_file)
@@ -31,7 +33,7 @@ check_attend <- unique(pos$pos_name)
 contact_pos <- 'attend|^case|^\\[promotor|contact'
 score_pos <- 'score|level|credit'
 
-pos$info_type <- NA
+pos$info_type <- 'other'
 pos$info_type[str_detect(pos$pos_name, contact_pos)] <- 'contact'
 pos$info_type[str_detect(pos$pos_name, score_pos)] <- 'score'
 
@@ -39,9 +41,15 @@ pos$info_type[str_detect(pos$pos_name, score_pos)] <- 'score'
 pos %>%
   filter(info_type == 'contact') %>%
   filter(pos_value != 'no') %>%
-  mutate(tool_id = pos_id, 
+  mutate(tool_id = pos_id,
          tool_name = pos_name,
          tool_type = 'pos') %>%
   select(subject_id, program_id, program_name, tool_type,
          tool_id, tool_name, date, time) ->
   test
+
+
+# Deal with touchpoint data -----------------------------------------------
+tp <- load_txt(tp_file)
+tp <- clean_data(tp)
+
